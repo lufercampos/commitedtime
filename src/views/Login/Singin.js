@@ -11,12 +11,13 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import { Redirect } from "react-router-dom";
-import { authenticatesUser } from "../store/actions/AuthAction";
-import { showAlert } from "../store/actions/AppAction";
+import { authenticatesUser } from "../../store/actions/AuthAction";
+import { showAlert } from "../../store/actions/AppAction";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Field, reduxForm } from "redux-form";
-import { renderTextField } from "../components/Validation";
+import { renderTextField } from "../../components/Validation";
+import Blocker from "../../components/Blocker";
 
 const styles = (theme) => ({
   root: {
@@ -87,24 +88,20 @@ class Singin extends React.Component {
     super(props);
     this.state = {
       user: {},
-      confirmPassword: null,
-      value: 0,
     };
   }
 
-  onLogin = () => {};
+  onLogin = () => {
+    this.props.onLogin(this.state.user.email, this.state.user.password);
+  };
 
   onChange = (event) => {
-    if (event.target.name === "confirmpassword") {
-      this.setState({ confirmPassword: event.target.value });
-    } else {
-      this.setState((prevState) => ({
-        user: {
-          ...prevState.user,
-          [event.target.name]: event.target.value,
-        },
-      }));
-    }
+    this.setState((prevState) => ({
+      user: {
+        ...prevState.user,
+        [event.target.name]: event.target.value,
+      },
+    }));
   };
 
   goToSingup = (event) => {
@@ -112,7 +109,7 @@ class Singin extends React.Component {
   };
 
   render() {
-    const { classes, handleSubmit, loggedIn } = this.props;
+    const { classes, handleSubmit, loggedIn, submitting } = this.props;
 
     return !loggedIn ? (
       <div className={classes.paper}>
@@ -123,57 +120,58 @@ class Singin extends React.Component {
           Sign in
         </Typography>
 
-        <Field
-          variant="outlined"
-          margin="dense"
-          onChange={this.onChange}
-          fullWidth
-          name="email"
-          component={renderTextField}
-          label="Email Address"
-          autoComplete="email"
-        />
+        <div className={classes.form}>
+          <Blocker submitting={submitting}>
+            <Field
+              variant="outlined"
+              margin="dense"
+              onChange={this.onChange}
+              fullWidth
+              name="email"
+              component={renderTextField}
+              label="Email Address"
+              autoComplete="email"
+            />
 
-        <Field
-          variant="outlined"
-          margin="dense"
-          onChange={this.onChange}
-          fullWidth
-          name="password"
-          component={renderTextField}
-          label="Password"
-          autoComplete="password"
-          type="password"
-        />
+            <Field
+              variant="outlined"
+              margin="dense"
+              onChange={this.onChange}
+              fullWidth
+              name="password"
+              component={renderTextField}
+              label="Password"
+              autoComplete="password"
+              type="password"
+            />
 
-        <FormControlLabel
-          control={<Checkbox value="remember" color="primary" />}
-          label="Remember me"
-        />
-        <Button
-          onClick={handleSubmit(this.onLogin)}
-          fullWidth
-          variant="contained"
-          color="primary"
-          className={classes.submit}
-        >
-          Sign In
-        </Button>
-        <Grid container>
-          <Grid item xs>
-            <Link href="#" variant="body2">
-              Forgot password?
-            </Link>
-          </Grid>
-          <Grid item>
-            <Link onClick={this.goToSingup} variant="body2">
-              {"Don't have an account? Sign Up"}
-            </Link>
-          </Grid>
-        </Grid>
-        <Box mt={5}>
-          <Copyright />
-        </Box>
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+            />
+            <Button
+              onClick={handleSubmit(this.onLogin)}
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+            >
+              Sign In
+            </Button>
+            <Grid container>
+              <Grid item xs>
+                <Link href="#" variant="body2">
+                  Forgot password?
+                </Link>
+              </Grid>
+              <Grid item>
+                <Link onClick={this.goToSingup} variant="body2">
+                  {"Don't have an account? Sign Up"}
+                </Link>
+              </Grid>
+            </Grid>
+          </Blocker>
+        </div>
       </div>
     ) : (
       <Redirect to={{ from: { pathname: "/" } }} />
@@ -190,7 +188,7 @@ const mapStateToProps = (state) => ({
 });
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ showAlert, authenticatesUser }, dispatch);
+  return bindActionCreators({ showAlert }, dispatch);
 }
 
 export default connect(

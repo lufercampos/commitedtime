@@ -2,27 +2,20 @@ import React from "react";
 import PropTypes from "prop-types";
 import SwipeableViews from "react-swipeable-views";
 import Box from "@material-ui/core/Box";
-import Avatar from "@material-ui/core/Avatar";
-import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
 import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import { Redirect } from "react-router-dom";
-import { authenticatesUser } from "../store/actions/AuthAction";
-import { showAlert } from "../store/actions/AppAction";
-import { saveUser } from "../services/UserService";
+import { authenticatesUser } from "../../store/actions/AuthAction";
+import { showAlert } from "../../store/actions/AppAction";
+import { saveUser } from "../../services/UserService";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Field, reduxForm } from "redux-form";
-import { renderTextField } from "../components/Validation";
-import Blocker from "../components/Blocker";
 import Singin from "./Singin";
+import Singup from "./Singup";
 
 const styles = (theme) => ({
   root: {
@@ -97,18 +90,16 @@ class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {},
-      confirmPassword: null,
       value: 0,
     };
   }
 
-  onLogin = () => {
+  onLogin = (email, password) => {
     return new Promise((resolve, reject) => {
       this.props
         .authenticatesUser({
-          email: this.state.user.email,
-          password: this.state.user.password,
+          email: email,
+          password: password,
         })
         .then((result) => {
           resolve();
@@ -128,53 +119,29 @@ class Login extends React.Component {
 
   onSingup = () => {
     return new Promise((resolve, reject) => {
-      if (this.state.confirmPassword !== this.state.user.password) {
-        showAlert({
-          message: "Password confirmation does not match!",
-          options: {
-            variant: "error",
-            anchorOrigin: { vertical: "top", horizontal: "right" },
-          },
-        });
-        reject();
-      } else {
-        saveUser(this.state.user)
-          .then((result) => {
-            showAlert({
-              message:
-                "Singup finish with sucefully! Check your e-mail to validate and Sing In later.",
-              options: {
-                variant: "sucess",
-                anchorOrigin: { vertical: "top", horizontal: "right" },
-              },
-            });
-            resolve();
-          })
-          .catch((error) => {
-            this.props.showAlert({
-              message: error.message,
-              options: {
-                variant: "error",
-                anchorOrigin: { vertical: "top", horizontal: "center" },
-              },
-            });
-            reject();
+      saveUser(this.state.user)
+        .then((result) => {
+          showAlert({
+            message:
+              "Singup finish with sucefully! Check your e-mail to validate and Sing In later.",
+            options: {
+              variant: "sucess",
+              anchorOrigin: { vertical: "top", horizontal: "right" },
+            },
           });
-      }
+          resolve();
+        })
+        .catch((error) => {
+          this.props.showAlert({
+            message: error.message,
+            options: {
+              variant: "error",
+              anchorOrigin: { vertical: "top", horizontal: "center" },
+            },
+          });
+          reject();
+        });
     });
-  };
-
-  onChange = (event) => {
-    if (event.target.name === "confirmpassword") {
-      this.setState({ confirmPassword: event.target.value });
-    } else {
-      this.setState((prevState) => ({
-        user: {
-          ...prevState.user,
-          [event.target.name]: event.target.value,
-        },
-      }));
-    }
   };
 
   goToSingup = (event) => {
@@ -188,114 +155,24 @@ class Login extends React.Component {
   };
 
   render() {
-    const { classes, theme, handleSubmit, submitting, loggedIn } = this.props;
+    const { classes, theme, loggedIn } = this.props;
 
     return !loggedIn ? (
       <Grid container component="main" className={classes.root}>
         <CssBaseline />
         <Grid item xs={false} sm={4} md={7} className={classes.image} />
         <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-          <Blocker submitting={submitting}>
-            <SwipeableViews
-              axis={theme.direction === "rtl" ? "x-reverse" : "x"}
-              index={this.state.value}
-            >
-              <TabPanel
-                value={this.state.value}
-                index={0}
-                dir={theme.direction}
-              >
-                <Singin onLogin={this.onLogin} goToSingup={this.goToSingup} />
-              </TabPanel>
-              <TabPanel
-                value={this.state.value}
-                index={1}
-                dir={theme.direction}
-              >
-                <div className={classes.paper}>
-                  <Avatar className={classes.avatar}>
-                    <LockOutlinedIcon />
-                  </Avatar>
-                  <Typography component="h1" variant="h5">
-                    Sign up
-                  </Typography>
-                  <div className={classes.form}>
-                    <Field
-                      variant="outlined"
-                      margin="dense"
-                      onChange={this.onChange}
-                      fullWidth
-                      name="name"
-                      component={renderTextField}
-                      label="Name"
-                      autoComplete="name"
-                    />
-
-                    <Field
-                      variant="outlined"
-                      margin="dense"
-                      onChange={this.onChange}
-                      fullWidth
-                      name="email"
-                      component={renderTextField}
-                      label="Email Address"
-                      autoComplete="email"
-                      type="email"
-                    />
-
-                    <Field
-                      variant="outlined"
-                      margin="dense"
-                      onChange={this.onChange}
-                      fullWidth
-                      name="password"
-                      component={renderTextField}
-                      label="Password"
-                      autoComplete="current-password"
-                      type="password"
-                    />
-
-                    <Field
-                      variant="outlined"
-                      margin="dense"
-                      onChange={this.onChange}
-                      fullWidth
-                      name="confirmpassword"
-                      component={renderTextField}
-                      label="Confirm Password"
-                      autoComplete="current-password"
-                      type="password"
-                    />
-
-                    <Button
-                      onClick={handleSubmit(this.onSingup)}
-                      fullWidth
-                      variant="contained"
-                      color="primary"
-                      className={classes.submit}
-                    >
-                      Sign up
-                    </Button>
-
-                    <Grid container>
-                      <Grid item xs>
-                        <Link
-                          href="#"
-                          onClick={this.goToSingin}
-                          variant="body2"
-                        >
-                          Already have an account? Sign in
-                        </Link>
-                      </Grid>
-                    </Grid>
-                    <Box mt={5}>
-                      <Copyright />
-                    </Box>
-                  </div>
-                </div>
-              </TabPanel>
-            </SwipeableViews>
-          </Blocker>
+          <SwipeableViews
+            axis={theme.direction === "rtl" ? "x-reverse" : "x"}
+            index={this.state.value}
+          >
+            <TabPanel value={this.state.value} index={0} dir={theme.direction}>
+              <Singin onLogin={this.onLogin} goToSingup={this.goToSingup} />
+            </TabPanel>
+            <TabPanel value={this.state.value} index={1} dir={theme.direction}>
+              <Singup onSingup={this.onSingup} goToSingin={this.goToSingin} />
+            </TabPanel>
+          </SwipeableViews>
         </Grid>
       </Grid>
     ) : (
@@ -319,11 +196,4 @@ function mapDispatchToProps(dispatch) {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(
-  withStyles(styles, { withTheme: true })(
-    reduxForm({
-      form: "LoginForm",
-      validate,
-    })(Login)
-  )
-);
+)(withStyles(styles, { withTheme: true })(Login));

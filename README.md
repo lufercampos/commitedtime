@@ -1,5 +1,8 @@
-Project to control hourly earnings on a task / job. The user for being of the executor and client type.
+Project to control hourly earnings on a task / job. 
 
+This project makes requests for a REST API made in JAVA (APi Time). This project is also on github.
+
+Uses the MariaDB database. It is also on github.
 
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

@@ -1,3 +1,7 @@
+Project to control hourly earnings on a task / job. The user for being of the executor and client type.
+
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
